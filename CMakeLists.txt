@@ -76,7 +76,7 @@ option(WEBP_NEAR_LOSSLESS "Enable near-lossless encoding" ON)
 option(WEBP_ENABLE_SWAP_16BIT_CSP "Enable byte swap for 16 bit colorspaces."
        OFF)
 
-set(FIX_INCLUDE_LIST 
+set(FIX_INCLUDE_LIST
    decode
    encode
    demux
@@ -102,6 +102,8 @@ if(WIN32)
  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in TYPES_CONTENT)
  string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
 #define WEBP_EXTERN __declspec(dllexport)
+#else
+#define WEBP_EXTERN __declspec(dllimport)
 #endif
 
 #ifndef WEBP_EXTERN" TYPES_CONTENT "${TYPES_CONTENT}")
