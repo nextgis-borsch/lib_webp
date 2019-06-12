@@ -81,18 +81,15 @@ if(WIN32)
   option(WEBP_UNICODE "Build Unicode executables." ON)
 
   file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h TYPES_CONTENT)
-  string(REPLACE "#ifndef WEBP_EXTERN" "#include <stdint.h>
-
-#ifdef WEBP_EXPORTS
+  string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
 #define WEBP_EXTERN __declspec(dllexport)
 #endif
 
 #ifndef WEBP_EXTERN" TYPES_CONTENT ${TYPES_CONTENT})
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
+    add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
 else()
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
-
-    add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
 endif()
 
 if(WEBP_BUILD_WEBP_JS)
