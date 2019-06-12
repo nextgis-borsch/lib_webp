@@ -85,19 +85,19 @@ set(FIX_INCLUDE_LIST
     mux_types
 )
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
-    file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in)
-endif()
-
-foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h)
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in)
-    endif()
-endforeach()
-
 # Option needed for handling Unicode file names on Windows.
 if(WIN32)
   option(WEBP_UNICODE "Build Unicode executables." ON)
+
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
+      file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in)
+  endif()
+
+  foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
+      if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h)
+          file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in)
+      endif()
+  endforeach()
 
   file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in TYPES_CONTENT)
   string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
@@ -120,9 +120,9 @@ if(WIN32)
     endforeach()
     add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
 else()
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h COPYONLY)
     foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${FIX_INCLUDE}.h COPYONLY)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${FIX_INCLUDE}.h COPYONLY)
     endforeach()
 endif()
 
