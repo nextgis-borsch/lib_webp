@@ -8,7 +8,7 @@
 ################################################################################
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
-project(WebP C)
+project(webp C)
 
 if(NOT DEFINED PACKAGE_VENDOR)
     set(PACKAGE_VENDOR NextGIS)
@@ -81,8 +81,9 @@ if(WIN32)
   option(WEBP_UNICODE "Build Unicode executables." ON)
 
   file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h TYPES_CONTENT)
-  string(REPLACE "#ifndef WEBP_EXTERN" "#ifndef WEBP_DLL_H_
-#define WEBP_DLL_H_
+  string(REPLACE "#ifndef WEBP_EXTERN" "#include <stdint.h>
+      
+#ifdef WEBP_EXPORTS
 #define WEBP_EXTERN __declspec(dllexport)
 #endif
 
@@ -90,6 +91,8 @@ if(WIN32)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
 else()
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
+
+    add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
 endif()
 
 if(WEBP_BUILD_WEBP_JS)
@@ -249,7 +252,9 @@ target_include_directories(webputilsdecode
                                    ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
-
+if(WIN32)
+    set(PUBLIC_HEADERS_WDC ${PUBLIC_HEADERS_WDC} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebpdecoder.rc)
+endif()
 add_library(webpdecoder
             $<TARGET_OBJECTS:webpdecode>
             $<TARGET_OBJECTS:webpdspdecode>
@@ -277,7 +282,8 @@ if(OSX_FRAMEWORK)
 else()
     set_target_properties(
       webpdecoder
-      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WDC}")
+      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WDC}"
+  DEFINE_SYMBOL WEBP_EXPORTS)
 endif()
 
 # configure_pkg_config("src/libwebpdecoder.pc")
@@ -308,7 +314,9 @@ set(PUBLIC_HEADERS_WP ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/encode.h
     ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h
 )
-
+if(WIN32)
+    set(PUBLIC_HEADERS_WP ${PUBLIC_HEADERS_WP} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebp.rc)
+endif()
 add_library(webp
             $<TARGET_OBJECTS:webpdecode>
             $<TARGET_OBJECTS:webpdsp>
@@ -335,7 +343,8 @@ if(OSX_FRAMEWORK)
 else()
     set_target_properties(
       webp
-      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WP}")
+      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WP}"
+  DEFINE_SYMBOL WEBP_EXPORTS)
 endif()
 
 # Make sure the OBJECT libraries are built with position independent code (it is
@@ -355,6 +364,9 @@ set(PUBLIC_HEADERS_WDU ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
     ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h
 )
+if(WIN32)
+    set(PUBLIC_HEADERS_WDU ${PUBLIC_HEADERS_WDU} ${CMAKE_CURRENT_SOURCE_DIR}/src/demux/libwebpdemux.rc)
+endif()
 add_library(webpdemux ${WEBP_DEMUX_SRCS} ${PUBLIC_HEADERS_WDU})
 target_link_libraries(webpdemux webp)
 target_include_directories(webpdemux
@@ -378,7 +390,8 @@ if(OSX_FRAMEWORK)
 else()
     set_target_properties(
       webpdemux
-      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WDU}")
+      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WDU}"
+  DEFINE_SYMBOL WEBP_EXPORTS)
 endif()
 
 # configure_pkg_config("src/demux/libwebpdemux.pc")
@@ -522,6 +535,9 @@ if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
   set(PUBLIC_HEADERS_WM ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux.h
       ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
       ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
+  if(WIN32)
+      set(PUBLIC_HEADERS_WM ${PUBLIC_HEADERS_WM} ${CMAKE_CURRENT_SOURCE_DIR}/src/demux/libwebpmux.rc)
+  endif()
   add_library(libwebpmux ${WEBP_MUX_SRCS} ${PUBLIC_HEADERS_WM})
   target_link_libraries(libwebpmux webp)
   target_include_directories(libwebpmux
@@ -552,9 +568,9 @@ if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
         # PUBLIC_HEADER "${PUBLIC_HEADERS_WM}"
     )
   else()
-      set_target_properties(libwebpmux
-                            PROPERTIES PUBLIC_HEADER
-                                       "${PUBLIC_HEADERS_WM}")
+      set_target_properties(libwebpmux PROPERTIES PUBLIC_HEADER
+        "${PUBLIC_HEADERS_WM}"
+    DEFINE_SYMBOL WEBP_EXPORTS)
   endif()
 endif()
 

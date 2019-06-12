@@ -111,7 +111,7 @@ function(get_cpack_filename ver name)
         set(STATIC_PREFIX "static-")
     endif()
 
-    set(${name} ${PACKAGE_NAME}-${STATIC_PREFIX}${ver}-${COMPILER} PARENT_SCOPE)
+    set(${name} ${PROJECT_NAME}-${STATIC_PREFIX}${ver}-${COMPILER} PARENT_SCOPE)
 endfunction()
 
 function(get_compiler_version ver)
