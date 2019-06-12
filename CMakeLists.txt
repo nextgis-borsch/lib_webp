@@ -79,6 +79,17 @@ option(WEBP_ENABLE_SWAP_16BIT_CSP "Enable byte swap for 16 bit colorspaces."
 # Option needed for handling Unicode file names on Windows.
 if(WIN32)
   option(WEBP_UNICODE "Build Unicode executables." ON)
+
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h TYPES_CONTENT)
+  string(REPLACE "#ifndef WEBP_EXTERN" "#ifndef WEBP_DLL_H_
+#define WEBP_DLL_H_
+#define WEBP_EXTERN __declspec(dllexport)
+#endif
+
+#ifndef WEBP_EXTERN" TYPES_CONTENT ${TYPES_CONTENT})
+    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h "${TYPES_CONTENT}")
+else()
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
 endif()
 
 if(WEBP_BUILD_WEBP_JS)
@@ -237,7 +248,7 @@ target_include_directories(webputilsdecode
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                    ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
+set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
 
 add_library(webpdecoder
             $<TARGET_OBJECTS:webpdecode>
@@ -295,7 +306,7 @@ target_include_directories(webputils
 
 set(PUBLIC_HEADERS_WP ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/encode.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h
 )
 
 add_library(webp
@@ -342,7 +353,7 @@ set_target_properties(webpdecode
 set(PUBLIC_HEADERS_WDU ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/demux.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h
 )
 add_library(webpdemux ${WEBP_DEMUX_SRCS} ${PUBLIC_HEADERS_WDU})
 target_link_libraries(webpdemux webp)
@@ -510,7 +521,7 @@ if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/src/mux "WEBP_MUX_SRCS" "")
   set(PUBLIC_HEADERS_WM ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux.h
       ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
+      ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
   add_library(libwebpmux ${WEBP_MUX_SRCS} ${PUBLIC_HEADERS_WM})
   target_link_libraries(libwebpmux webp)
   target_include_directories(libwebpmux
