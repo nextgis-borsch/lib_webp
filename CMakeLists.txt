@@ -87,7 +87,7 @@ if(WIN32)
 #endif
 
 #ifndef WEBP_EXTERN" TYPES_CONTENT ${TYPES_CONTENT})
-    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h "${TYPES_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
 else()
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
 endif()
