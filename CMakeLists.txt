@@ -546,9 +546,10 @@ if(WEBP_BUILD_ANIM_UTILS
   # Example utility library.
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/examples "EXAMPLEUTIL_SRCS"
                     "example_util_[^ ]*")
-  list(APPEND EXAMPLEUTIL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/examples/stopwatch.h ${IMAGEIOUTILS_SRCS})
+  list(APPEND EXAMPLEUTIL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/examples/stopwatch.h)
   if(WIN32)
-    set(EXAMPLEUTIL_SRCS ${EXAMPLEUTIL_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleutil.def)
+      list(APPEND EXAMPLEUTIL_SRCS ${IMAGEIOUTILS_SRCS})
+      set(EXAMPLEUTIL_SRCS ${EXAMPLEUTIL_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleutil.def)
   endif()
   add_library(exampleutil ${EXAMPLEUTIL_SRCS})
   target_include_directories(
@@ -581,8 +582,11 @@ if(WEBP_BUILD_ANIM_UTILS
                     "imageenc_[^ ]*")
   if(WIN32)
     set(IMAGEENC_SRCS ${IMAGEENC_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/imageio/imageenc.def)
+    set(IMAGEIOUTILS_EX2_SRCS ${IMAGEIOUTILS_SRCS})
+  else()
+    set(IMAGEIOUTILS_EX2_SRCS)
   endif()
-  add_library(imageenc ${IMAGEENC_SRCS} ${IMAGEIOUTILS_SRCS})
+  add_library(imageenc ${IMAGEENC_SRCS} ${IMAGEIOUTILS_EX2_SRCS})
   target_link_libraries(imageenc webp)
 
   set_property(TARGET exampleutil
@@ -597,7 +601,7 @@ if(WEBP_BUILD_DWEBP)
   # dwebp
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/examples "DWEBP_SRCS" "dwebp")
   add_executable(dwebp ${DWEBP_SRCS})
-  target_link_libraries(dwebp exampleutil imagedec imageenc webp)
+  target_link_libraries(dwebp exampleutil imagedec imageenc)
   target_include_directories(dwebp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
   install(TARGETS dwebp RUNTIME DESTINATION ${INSTALL_BIN_DIR})
 endif()
