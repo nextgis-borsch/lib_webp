@@ -1,3 +1,11 @@
+################################################################################
+# Project:  Lib webp
+# Purpose:  CMake build script from original CMakeLists.txt.
+# Author:   Dmitry Baryshnikov, dmitry.baryshnikov@nexgis.com
+################################################################################
+# Copyright (C) 2017-2018, NextGIS <info@nextgis.com>
+# Copyright (c) 2010, Google Inc
+################################################################################
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
 project(WebP C)
