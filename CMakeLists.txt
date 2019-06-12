@@ -76,20 +76,52 @@ option(WEBP_NEAR_LOSSLESS "Enable near-lossless encoding" ON)
 option(WEBP_ENABLE_SWAP_16BIT_CSP "Enable byte swap for 16 bit colorspaces."
        OFF)
 
+set(FIX_INCLUDE_LIST 
+   decode
+   encode
+   demux
+   format_constants
+   mux
+   mux_types
+)
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
+   file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in)
+endif()
+
+foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
+   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h)
+       file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in)
+   endif()
+endforeach()
+
 # Option needed for handling Unicode file names on Windows.
 if(WIN32)
-  option(WEBP_UNICODE "Build Unicode executables." ON)
+ option(WEBP_UNICODE "Build Unicode executables." ON)
 
-  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h TYPES_CONTENT)
-  string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
+ file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in TYPES_CONTENT)
+ string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
 #define WEBP_EXTERN __declspec(dllexport)
 #endif
 
-#ifndef WEBP_EXTERN" TYPES_CONTENT ${TYPES_CONTENT})
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
-    add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
+#ifndef WEBP_EXTERN" TYPES_CONTENT "${TYPES_CONTENT}")
+   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
+
+   macro(fix_includes name)
+       file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${name}.h.in TYPES_CONTENT)
+       string(REPLACE "#include \"./" "#include \"" TYPES_CONTENT "${TYPES_CONTENT}")
+       file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${name}.h "${TYPES_CONTENT}")
+   endmacro()
+
+   foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
+       fix_includes(${FIX_INCLUDE})
+   endforeach()
+   add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
 else()
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
+   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
+   foreach(FIX_INCLUDE FIX_INCLUDE_LIST)
+       file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${FIX_INCLUDE}.h)
+   endforeach()
 endif()
 
 if(WEBP_BUILD_WEBP_JS)
