@@ -1,0 +1,9 @@
+LIBRARY   imagedec
+EXPORTS
+  ExUtilGetUInt
+  ExUtilGetInt
+  ExUtilGetFloat
+  ExUtilGetInts
+  ExUtilReadFileToWebPData
+  ExUtilInitCommandLineArguments
+  ExUtilDeleteCommandLineArguments

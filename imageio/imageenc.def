@@ -1,0 +1,13 @@
+LIBRARY   imagedec
+EXPORTS
+  WebPSaveImage
+  WebPWritePNG
+  WebPWritePPM
+  WebPWritePAM
+  WebPWrite16bAsPGM
+  WebPWriteBMP
+  WebPWriteTIFF
+  WebPWriteAlphaPlane
+  WebPWritePGM
+  WebPWriteYUV
+  WebPWrite16bAsPGM

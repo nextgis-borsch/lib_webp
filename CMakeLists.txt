@@ -77,53 +77,53 @@ option(WEBP_ENABLE_SWAP_16BIT_CSP "Enable byte swap for 16 bit colorspaces."
        OFF)
 
 set(FIX_INCLUDE_LIST
-   decode
-   encode
-   demux
-   format_constants
-   mux
-   mux_types
+    decode
+    encode
+    demux
+    format_constants
+    mux
+    mux_types
 )
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
-   file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in)
+    file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in)
 endif()
 
 foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
-   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h)
-       file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in)
-   endif()
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h)
+        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in)
+    endif()
 endforeach()
 
 # Option needed for handling Unicode file names on Windows.
 if(WIN32)
- option(WEBP_UNICODE "Build Unicode executables." ON)
+  option(WEBP_UNICODE "Build Unicode executables." ON)
 
- file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in TYPES_CONTENT)
- string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in TYPES_CONTENT)
+  string(REPLACE "#ifndef WEBP_EXTERN" "#ifdef WEBP_EXPORTS
 #define WEBP_EXTERN __declspec(dllexport)
 #else
 #define WEBP_EXTERN __declspec(dllimport)
 #endif
 
 #ifndef WEBP_EXTERN" TYPES_CONTENT "${TYPES_CONTENT}")
-   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h "${TYPES_CONTENT}")
 
-   macro(fix_includes name)
-       file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${name}.h.in TYPES_CONTENT)
-       string(REPLACE "#include \"./" "#include \"" TYPES_CONTENT "${TYPES_CONTENT}")
-       file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${name}.h "${TYPES_CONTENT}")
-   endmacro()
+    macro(fix_includes name)
+        file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${name}.h.in TYPES_CONTENT)
+        string(REPLACE "#include \"./" "#include \"" TYPES_CONTENT "${TYPES_CONTENT}")
+        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${name}.h "${TYPES_CONTENT}")
+    endmacro()
 
-   foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
-       fix_includes(${FIX_INCLUDE})
-   endforeach()
-   add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
+    foreach(FIX_INCLUDE ${FIX_INCLUDE_LIST})
+        fix_includes(${FIX_INCLUDE})
+    endforeach()
+    add_definitions(-DHAVE_WINCODEC_H -DWEBP_USE_THREAD)
 else()
-   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
-   foreach(FIX_INCLUDE FIX_INCLUDE_LIST)
-       file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${FIX_INCLUDE}.h)
-   endforeach()
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h.in DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
+    foreach(FIX_INCLUDE FIX_INCLUDE_LIST)
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/${FIX_INCLUDE}.h.in DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/webp/${FIX_INCLUDE}.h)
+    endforeach()
 endif()
 
 if(WEBP_BUILD_WEBP_JS)
@@ -252,6 +252,40 @@ foreach(FILE ${WEBP_SIMD_FILES_NOT_TO_INCLUDE})
   list(REMOVE_ITEM WEBP_DSP_DEC_SRCS ${FILE})
 endforeach()
 
+if(WIN32)
+    set(WEBP_DSP_DEC_SRCS ${WEBP_DSP_DEC_SRCS}
+        ${WEBP_SRC_DIR}/dsp/alpha_processing_neon.c
+        ${WEBP_SRC_DIR}/dsp/alpha_processing_sse2.c
+        ${WEBP_SRC_DIR}/dsp/alpha_processing_sse41.c
+        ${WEBP_SRC_DIR}/dsp/dec_sse2.c
+        ${WEBP_SRC_DIR}/dsp/dec_sse41.c
+        ${WEBP_SRC_DIR}/dsp/filters_neon.c
+        ${WEBP_SRC_DIR}/dsp/filters_sse2.c
+        ${WEBP_SRC_DIR}/dsp/lossless_neon.c
+        ${WEBP_SRC_DIR}/dsp/lossless_sse2.c
+        ${WEBP_SRC_DIR}/dsp/rescaler_neon.c
+        ${WEBP_SRC_DIR}/dsp/rescaler_sse2.c
+        ${WEBP_SRC_DIR}/dsp/upsampling_neon.c
+        ${WEBP_SRC_DIR}/dsp/upsampling_sse2.c
+        ${WEBP_SRC_DIR}/dsp/upsampling_sse41.c
+        ${WEBP_SRC_DIR}/dsp/yuv_sse2.c
+        ${WEBP_SRC_DIR}/dsp/yuv_sse41.c
+        ${WEBP_SRC_DIR}/dsp/cpu.c
+    )
+
+    set(WEBP_ENC_SRCS ${WEBP_ENC_SRCS}
+        ${WEBP_SRC_DIR}/dsp/cost_neon.c
+        ${WEBP_SRC_DIR}/dsp/cost_sse2.c
+        ${WEBP_SRC_DIR}/dsp/enc_neon.c
+        ${WEBP_SRC_DIR}/dsp/enc_sse2.c
+        ${WEBP_SRC_DIR}/dsp/enc_sse41.c
+        ${WEBP_SRC_DIR}/dsp/lossless_enc_neon.c
+        ${WEBP_SRC_DIR}/dsp/lossless_enc_sse2.c
+        ${WEBP_SRC_DIR}/dsp/lossless_enc_sse41.c
+        ${WEBP_SRC_DIR}/dsp/ssim_sse2.c
+    )
+endif()
+
 # Generate the config.h file.
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config.h.in
                ${CMAKE_CURRENT_BINARY_DIR}/src/webp/config.h)
@@ -282,7 +316,7 @@ target_include_directories(webputilsdecode
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                    ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
+set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
 if(WIN32)
     set(PUBLIC_HEADERS_WDC ${PUBLIC_HEADERS_WDC} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebpdecoder.rc)
 endif()
@@ -341,8 +375,8 @@ target_include_directories(webputils
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                    ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(PUBLIC_HEADERS_WP ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/encode.h
+set(PUBLIC_HEADERS_WP ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/webp/encode.h
     ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h
 )
 if(WIN32)
@@ -390,9 +424,9 @@ set_target_properties(webpdecode
 # configure_pkg_config("src/libwebp.pc")
 
 # Build the webp demux library.
-set(PUBLIC_HEADERS_WDU ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/demux.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
+set(PUBLIC_HEADERS_WDU ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/webp/demux.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/webp/mux_types.h
     ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h
 )
 if(WIN32)
@@ -505,23 +539,36 @@ if(WEBP_BUILD_ANIM_UTILS
    OR WEBP_BUILD_GIF2WEBP
    OR WEBP_BUILD_IMG2WEBP
    OR WEBP_BUILD_VWEBP)
+
+  parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/imageio "IMAGEIOUTILS_SRCS"
+                    "imageio_util_[^ ]*")
+
   # Example utility library.
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/examples "EXAMPLEUTIL_SRCS"
                     "example_util_[^ ]*")
-  list(APPEND EXAMPLEUTIL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/examples/stopwatch.h)
+  list(APPEND EXAMPLEUTIL_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/examples/stopwatch.h ${IMAGEIOUTILS_SRCS})
+  if(WIN32)
+    set(EXAMPLEUTIL_SRCS ${EXAMPLEUTIL_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/examples/exampleutil.def)
+  endif()
   add_library(exampleutil ${EXAMPLEUTIL_SRCS})
   target_include_directories(
     exampleutil
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
-  parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/imageio "IMAGEIOUTILS_SRCS"
-                    "imageio_util_[^ ]*")
-  add_library(imageioutil ${IMAGEIOUTILS_SRCS})
+  if(WIN32)
+    set(IMAGEIOUTILS_EX_SRCS ${IMAGEIOUTILS_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/imageio/imageio.def)
+  else()
+    set(IMAGEIOUTILS_EX_SRCS ${IMAGEIOUTILS_SRCS})
+  endif()
+  add_library(imageioutil ${IMAGEIOUTILS_EX_SRCS})
   target_link_libraries(imageioutil webp)
 
   # Image-decoding utility library.
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/imageio "IMAGEDEC_SRCS"
                     "imagedec_[^ ]*")
+  if(WIN32)
+    set(IMAGEDEC_SRCS ${IMAGEDEC_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/imageio/imagedec.def)
+  endif()
   add_library(imagedec ${IMAGEDEC_SRCS})
   target_link_libraries(imagedec
                         imageioutil
@@ -532,7 +579,10 @@ if(WEBP_BUILD_ANIM_UTILS
   # Image-encoding utility library.
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/imageio "IMAGEENC_SRCS"
                     "imageenc_[^ ]*")
-  add_library(imageenc ${IMAGEENC_SRCS})
+  if(WIN32)
+    set(IMAGEENC_SRCS ${IMAGEENC_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/imageio/imageenc.def)
+  endif()
+  add_library(imageenc ${IMAGEENC_SRCS} ${IMAGEIOUTILS_SRCS})
   target_link_libraries(imageenc webp)
 
   set_property(TARGET exampleutil
@@ -547,7 +597,7 @@ if(WEBP_BUILD_DWEBP)
   # dwebp
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/examples "DWEBP_SRCS" "dwebp")
   add_executable(dwebp ${DWEBP_SRCS})
-  target_link_libraries(dwebp exampleutil imagedec imageenc)
+  target_link_libraries(dwebp exampleutil imagedec imageenc webp)
   target_include_directories(dwebp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
   install(TARGETS dwebp RUNTIME DESTINATION ${INSTALL_BIN_DIR})
 endif()
@@ -563,8 +613,8 @@ endif()
 
 if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/src/mux "WEBP_MUX_SRCS" "")
-  set(PUBLIC_HEADERS_WM ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux.h
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
+  set(PUBLIC_HEADERS_WM ${CMAKE_CURRENT_BINARY_DIR}/src/webp/mux.h
+      ${CMAKE_CURRENT_BINARY_DIR}/src/webp/mux_types.h
       ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
   if(WIN32)
       set(PUBLIC_HEADERS_WM ${PUBLIC_HEADERS_WM} ${CMAKE_CURRENT_SOURCE_DIR}/src/mux/libwebpmux.rc)
@@ -705,7 +755,7 @@ if(WEBP_BUILD_EXTRAS)
   # webp_quality
   add_executable(webp_quality ${WEBP_QUALITY_SRCS} ${WEBP_EXTRAS_SRCS})
   target_link_libraries(webp_quality exampleutil imagedec)
-  target_include_directories(webp_quality PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories(webp_quality PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/src)
   install(TARGETS webp_quality RUNTIME DESTINATION ${INSTALL_BIN_DIR})
 
   # vwebp_sdl

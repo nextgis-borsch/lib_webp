@@ -1,0 +1,9 @@
+LIBRARY   imagedec
+EXPORTS
+  ImgIoUtilSetBinaryMode
+  ImgIoUtilReadFile
+  ImgIoUtilReadFromStdin
+  ImgIoUtilWriteFile
+  ImgIoUtilCopyPlane
+  ImgIoUtilCheckSizeArgumentsOverflow
+  
