@@ -82,7 +82,7 @@ if(WIN32)
 
   file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h TYPES_CONTENT)
   string(REPLACE "#ifndef WEBP_EXTERN" "#include <stdint.h>
-      
+
 #ifdef WEBP_EXPORTS
 #define WEBP_EXTERN __declspec(dllexport)
 #endif
@@ -536,7 +536,7 @@ if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
       ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
       ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
   if(WIN32)
-      set(PUBLIC_HEADERS_WM ${PUBLIC_HEADERS_WM} ${CMAKE_CURRENT_SOURCE_DIR}/src/demux/libwebpmux.rc)
+      set(PUBLIC_HEADERS_WM ${PUBLIC_HEADERS_WM} ${CMAKE_CURRENT_SOURCE_DIR}/src/mux/libwebpmux.rc)
   endif()
   add_library(libwebpmux ${WEBP_MUX_SRCS} ${PUBLIC_HEADERS_WM})
   target_link_libraries(libwebpmux webp)
