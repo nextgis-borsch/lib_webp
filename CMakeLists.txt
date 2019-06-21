@@ -32,7 +32,6 @@ if(OSX_FRAMEWORK)
     set(INSTALL_BIN_DIR "bin" CACHE INTERNAL "Installation directory for executables" FORCE)
     set(INSTALL_LIB_DIR "Library/Frameworks" CACHE INTERNAL "Installation directory for libraries" FORCE)
     set(INSTALL_INC_DIR "${INSTALL_LIB_DIR}/${PROJECT_NAME}.framework/Headers" CACHE INTERNAL "Installation directory for headers" FORCE)
-    set(INSTALL_CMAKECONF_DIR ${INSTALL_LIB_DIR}/${PROJECT_NAME}.framework/Resources/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
     set(SKIP_INSTALL_EXECUTABLES OFF)
     set(SKIP_INSTALL_EXPORT ON)
     set(SKIP_INSTALL_FILES OFF)
@@ -45,7 +44,6 @@ else()
     set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE INTERNAL "Installation directory for libraries" FORCE)
     set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation directory for headers" FORCE)
     set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Installation directory for doc pages" FORCE)
-    set(INSTALL_CMAKECONF_DIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
 endif()
 
 include(util)
@@ -841,20 +839,58 @@ if(WEBP_BUILD_ANIM_UTILS)
   target_include_directories(anim_dump PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 endif()
 
-set(PACKAGE_NAME ${PROJECT_NAME})
-string(TOUPPER ${PACKAGE_NAME} PACKAGE_UPPER_NAME)
+foreach(INSTALLED_LIBRARY ${INSTALLED_LIBRARIES})
+    set(PACKAGE_NAME ${INSTALLED_LIBRARY})
+    if(PACKAGE_NAME STREQUAL "libwebpmux")
+        set(PACKAGE_NAME webpmux)
+    endif()
+    string(TOUPPER ${PACKAGE_NAME} PACKAGE_UPPER_NAME)
 
-# Install the different headers and libraries.
-# include(GNUInstallDirs)
-install(TARGETS ${INSTALLED_LIBRARIES}
-        EXPORT ${PACKAGE_UPPER_NAME}Targets
-        PUBLIC_HEADER DESTINATION ${INSTALL_INC_DIR}/webp
-        INCLUDES
-        DESTINATION ${INSTALL_INC_DIR}
-        ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
-        LIBRARY DESTINATION ${INSTALL_LIB_DIR}
-        RUNTIME DESTINATION ${INSTALL_BIN_DIR}
-        FRAMEWORK DESTINATION ${INSTALL_LIB_DIR})
+    # Install the different headers and libraries.
+    # include(GNUInstallDirs)
+    install(TARGETS ${INSTALLED_LIBRARY}
+            EXPORT ${PACKAGE_UPPER_NAME}Targets
+            PUBLIC_HEADER DESTINATION ${INSTALL_INC_DIR}/webp
+            INCLUDES
+            DESTINATION ${INSTALL_INC_DIR}
+            ARCHIVE DESTINATION ${INSTALL_LIB_DIR}
+            LIBRARY DESTINATION ${INSTALL_LIB_DIR}
+            RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+            FRAMEWORK DESTINATION ${INSTALL_LIB_DIR})
+
+    # Add all targets to the build-tree export set
+    export(TARGETS ${INSTALLED_LIBRARY}
+        FILE ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Targets.cmake)
+
+    # Create the <Package>Config.cmake file
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/PackageConfig.cmake.in
+        ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Config.cmake @ONLY)
+
+    if(OSX_FRAMEWORK)
+        set(INSTALL_CMAKECONF_DIR ${INSTALL_LIB_DIR}/${PACKAGE_NAME}.framework/Resources/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
+    else()
+        set(INSTALL_CMAKECONF_DIR ${CMAKE_INSTALL_DATADIR}/${PACKAGE_NAME}/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
+    endif()
+
+    if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
+        # Install the <Package>Config.cmake
+        install(FILES
+          ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Config.cmake
+          DESTINATION ${INSTALL_CMAKECONF_DIR} COMPONENT dev)
+
+        # Install the export set for use with the install-tree
+        install(EXPORT ${PACKAGE_UPPER_NAME}Targets DESTINATION ${INSTALL_CMAKECONF_DIR} COMPONENT dev)
+    endif()
+
+    # Export package ===============================================================
+
+    if(REGISTER_PACKAGE)
+        # Export the package for use from the build-tree
+        # (this registers the build-tree with a global CMake-registry)
+        export(PACKAGE ${PACKAGE_UPPER_NAME})
+    endif()
+
+endforeach()
 # set(ConfigPackageLocation ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake/)
 # install(EXPORT ${PROJECT_NAME}Targets
 #         NAMESPACE ${PROJECT_NAME}::
@@ -912,34 +948,7 @@ endforeach()
 
 # ==============================================================================
 
-# Add all targets to the build-tree export set
-export(TARGETS ${INSTALLED_LIBRARIES}
-    FILE ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Targets.cmake)
-
-# Create the <Package>Config.cmake file
-configure_file(${PROJECT_SOURCE_DIR}/cmake/PackageConfig.cmake.in
-    ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Config.cmake @ONLY)
-
-if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
-    # Install the <Package>Config.cmake
-    install(FILES
-      ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Config.cmake
-      DESTINATION ${INSTALL_CMAKECONF_DIR} COMPONENT dev)
-
-    # Install the export set for use with the install-tree
-    install(EXPORT ${PACKAGE_UPPER_NAME}Targets DESTINATION ${INSTALL_CMAKECONF_DIR} COMPONENT dev)
-endif()
-
-
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-
-# Export package ===============================================================
-
-if(REGISTER_PACKAGE)
-    # Export the package for use from the build-tree
-    # (this registers the build-tree with a global CMake-registry)
-    export(PACKAGE ${PACKAGE_UPPER_NAME})
-endif()
 
 # Archiving ====================================================================
 
