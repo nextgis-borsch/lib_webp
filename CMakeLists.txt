@@ -842,7 +842,9 @@ endif()
 foreach(INSTALLED_LIBRARY ${INSTALLED_LIBRARIES})
     set(PACKAGE_NAME ${INSTALLED_LIBRARY})
     if(PACKAGE_NAME STREQUAL "libwebpmux")
-        set(PACKAGE_NAME webpmux)
+        set(PACKAGE_NAME_FIX webpmux)
+    else()
+        set(PACKAGE_NAME_FIX ${PACKAGE_NAME})
     endif()
     string(TOUPPER ${PACKAGE_NAME} PACKAGE_UPPER_NAME)
 
@@ -867,9 +869,9 @@ foreach(INSTALLED_LIBRARY ${INSTALLED_LIBRARIES})
         ${PROJECT_BINARY_DIR}/${PACKAGE_UPPER_NAME}Config.cmake @ONLY)
 
     if(OSX_FRAMEWORK)
-        set(INSTALL_CMAKECONF_DIR ${INSTALL_LIB_DIR}/${PACKAGE_NAME}.framework/Resources/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
+        set(INSTALL_CMAKECONF_DIR ${INSTALL_LIB_DIR}/${PACKAGE_NAME_FIX}.framework/Resources/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
     else()
-        set(INSTALL_CMAKECONF_DIR ${CMAKE_INSTALL_DATADIR}/${PACKAGE_NAME}/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
+        set(INSTALL_CMAKECONF_DIR ${CMAKE_INSTALL_DATADIR}/${PACKAGE_NAME_FIX}/CMake CACHE INTERNAL "Installation directory for cmake config files" FORCE)
     endif()
 
     if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
@@ -952,10 +954,10 @@ add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_D
 
 # Archiving ====================================================================
 
-set(CPACK_PACKAGE_NAME "${PACKAGE_NAME}")
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "${PACKAGE_VENDOR}")
 set(CPACK_PACKAGE_VERSION "${VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_NAME} Installation")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME} Installation")
 set(CPACK_PACKAGE_RELOCATABLE TRUE)
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_GENERATOR "ZIP")
