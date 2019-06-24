@@ -31,7 +31,6 @@ endif()
 if(OSX_FRAMEWORK)
     set(INSTALL_BIN_DIR "bin" CACHE INTERNAL "Installation directory for executables" FORCE)
     set(INSTALL_LIB_DIR "Library/Frameworks" CACHE INTERNAL "Installation directory for libraries" FORCE)
-    set(INSTALL_INC_DIR "${INSTALL_LIB_DIR}/${PROJECT_NAME}.framework/Headers" CACHE INTERNAL "Installation directory for headers" FORCE)
     set(SKIP_INSTALL_EXECUTABLES OFF)
     set(SKIP_INSTALL_EXPORT ON)
     set(SKIP_INSTALL_FILES OFF)
@@ -42,7 +41,6 @@ else()
     include(GNUInstallDirs)
     set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE INTERNAL "Installation directory for executables" FORCE)
     set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE INTERNAL "Installation directory for libraries" FORCE)
-    set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE INTERNAL "Installation directory for headers" FORCE)
     set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Installation directory for doc pages" FORCE)
 endif()
 
@@ -320,14 +318,13 @@ if(WIN32)
 endif()
 add_library(webpdecoder
             $<TARGET_OBJECTS:webpdecode>
-            $<TARGET_OBJECTS:webpdspdecode>
-        $<TARGET_OBJECTS:webputilsdecode> ${PUBLIC_HEADERS_WDC})
+            $<TARGET_OBJECTS:webpdspdecode>)
 target_link_libraries(webpdecoder ${WEBP_DEP_LIBRARIES})
+
 target_include_directories(
   webpdecoder
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 if(OSX_FRAMEWORK)
     set_property(SOURCE ${PUBLIC_HEADERS_WDC}
@@ -388,8 +385,7 @@ add_library(webp
 target_link_libraries(webp ${WEBP_DEP_LIBRARIES})
 target_include_directories(webp
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-                                   ${CMAKE_CURRENT_BINARY_DIR}
-                           PUBLIC $<INSTALL_INTERFACE:include>)
+                                   ${CMAKE_CURRENT_BINARY_DIR})
 if(OSX_FRAMEWORK)
     set_property(SOURCE ${PUBLIC_HEADERS_WP}
         PROPERTY MACOSX_PACKAGE_LOCATION "Headers/webp"
@@ -434,8 +430,7 @@ add_library(webpdemux ${WEBP_DEMUX_SRCS} ${PUBLIC_HEADERS_WDU})
 target_link_libraries(webpdemux webp)
 target_include_directories(webpdemux
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-                                   ${CMAKE_CURRENT_BINARY_DIR}
-                           PUBLIC $<INSTALL_INTERFACE:include>)
+                                   ${CMAKE_CURRENT_BINARY_DIR})
 
 if(OSX_FRAMEWORK)
     set_property(SOURCE ${PUBLIC_HEADERS_WDU}
@@ -846,7 +841,13 @@ foreach(INSTALLED_LIBRARY ${INSTALLED_LIBRARIES})
     else()
         set(PACKAGE_NAME_FIX ${PACKAGE_NAME})
     endif()
-    string(TOUPPER ${PACKAGE_NAME} PACKAGE_UPPER_NAME)
+    string(TOUPPER ${PACKAGE_NAME_FIX} PACKAGE_UPPER_NAME)
+
+    if(OSX_FRAMEWORK)
+        set(INSTALL_INC_DIR "${INSTALL_LIB_DIR}/${PACKAGE_NAME_FIX}.framework/Headers")
+    else()
+        set(INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+    endif()
 
     # Install the different headers and libraries.
     # include(GNUInstallDirs)
