@@ -317,8 +317,10 @@ if(WIN32)
     set(PUBLIC_HEADERS_WDC ${PUBLIC_HEADERS_WDC} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebpdecoder.rc)
 endif()
 add_library(webpdecoder
-            $<TARGET_OBJECTS:webpdecode>
-            $<TARGET_OBJECTS:webpdspdecode>)
+    $<TARGET_OBJECTS:webpdecode>
+    $<TARGET_OBJECTS:webpdspdecode>
+    $<TARGET_OBJECTS:webputilsdecode>
+)
 target_link_libraries(webpdecoder ${WEBP_DEP_LIBRARIES})
 
 target_include_directories(
