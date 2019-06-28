@@ -37,11 +37,17 @@ if(OSX_FRAMEWORK)
     set(SKIP_INSTALL_DOCS OFF)
     set(CMAKE_MACOSX_RPATH ON)
     set(SKIP_INSTALL_HEADERS ON)
+    set(LIB_TYPE SHARED)
 else()
     include(GNUInstallDirs)
     set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE INTERNAL "Installation directory for executables" FORCE)
     set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE INTERNAL "Installation directory for libraries" FORCE)
     set(INSTALL_DOC_DIR ${CMAKE_INSTALL_DOCDIR} CACHE INTERNAL "Installation directory for doc pages" FORCE)
+    if(BUILD_SHARED_LIBS)
+        set(LIB_TYPE SHARED)
+    else()
+        set(LIB_TYPE STATIC)
+    endif()
 endif()
 
 include(util)
@@ -316,7 +322,7 @@ set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h ${CMAKE_CUR
 if(WIN32)
     set(PUBLIC_HEADERS_WDC ${PUBLIC_HEADERS_WDC} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebpdecoder.rc)
 endif()
-add_library(webpdecoder
+add_library(webpdecoder ${LIB_TYPE}
     $<TARGET_OBJECTS:webpdecode>
     $<TARGET_OBJECTS:webpdspdecode>
     $<TARGET_OBJECTS:webputilsdecode>
@@ -379,7 +385,7 @@ set(PUBLIC_HEADERS_WP ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h
 if(WIN32)
     set(PUBLIC_HEADERS_WP ${PUBLIC_HEADERS_WP} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebp.rc)
 endif()
-add_library(webp
+add_library(webp ${LIB_TYPE}
             $<TARGET_OBJECTS:webpdecode>
             $<TARGET_OBJECTS:webpdsp>
             $<TARGET_OBJECTS:webpencode>
@@ -428,7 +434,7 @@ set(PUBLIC_HEADERS_WDU ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h
 if(WIN32)
     set(PUBLIC_HEADERS_WDU ${PUBLIC_HEADERS_WDU} ${CMAKE_CURRENT_SOURCE_DIR}/src/demux/libwebpdemux.rc)
 endif()
-add_library(webpdemux ${WEBP_DEMUX_SRCS} ${PUBLIC_HEADERS_WDU})
+add_library(webpdemux ${LIB_TYPE} ${WEBP_DEMUX_SRCS} ${PUBLIC_HEADERS_WDU})
 target_link_libraries(webpdemux webp)
 target_include_directories(webpdemux
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -618,7 +624,7 @@ if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
   if(WIN32)
       set(PUBLIC_HEADERS_WM ${PUBLIC_HEADERS_WM} ${CMAKE_CURRENT_SOURCE_DIR}/src/mux/libwebpmux.rc)
   endif()
-  add_library(libwebpmux ${WEBP_MUX_SRCS} ${PUBLIC_HEADERS_WM})
+  add_library(libwebpmux ${LIB_TYPE} ${WEBP_MUX_SRCS} ${PUBLIC_HEADERS_WM})
   target_link_libraries(libwebpmux webp)
   target_include_directories(libwebpmux
                              PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
