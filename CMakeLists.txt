@@ -483,7 +483,7 @@ endfunction()
 if(OSX_FRAMEWORK)
     set_target_properties(webp PROPERTIES VERSION ${VERSION} SOVERSION ${FRAMEWORK_VERSION})
     set_target_properties(webpdecoder PROPERTIES VERSION ${VERSION} SOVERSION ${FRAMEWORK_VERSION})
-    set_target_properties(webpdemux PROPERTIES VERSION ${VERSION} SOVERSION ${WEBP_DEMUX_SOVERSION})
+    set_target_properties(webpdemux PROPERTIES VERSION ${VERSION} SOVERSION ${FRAMEWORK_VERSION})
 else()
     parse_version(Makefile.am webp WEBP_WEBP_SOVERSION)
     set_target_properties(webp
