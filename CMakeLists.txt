@@ -480,24 +480,30 @@ function(parse_version FILE NAME VAR)
                  ${TMP})
   set(${VAR} "${VERSION}" PARENT_SCOPE)
 endfunction()
-parse_version(Makefile.am webp WEBP_WEBP_SOVERSION)
-set_target_properties(webp
-                      PROPERTIES VERSION
-                                 ${PACKAGE_VERSION}
-                                 SOVERSION
-                                 ${WEBP_WEBP_SOVERSION})
-parse_version(Makefile.am webpdecoder WEBP_DECODER_SOVERSION)
-set_target_properties(webpdecoder
-                      PROPERTIES VERSION
-                                 ${PACKAGE_VERSION}
-                                 SOVERSION
-                                 ${WEBP_DECODER_SOVERSION})
-parse_version(demux/Makefile.am webpdemux WEBP_DEMUX_SOVERSION)
-set_target_properties(webpdemux
-                      PROPERTIES VERSION
-                                 ${PACKAGE_VERSION}
-                                 SOVERSION
-                                 ${WEBP_DEMUX_SOVERSION})
+if(OSX_FRAMEWORK)
+    set_target_properties(webp PROPERTIES VERSION ${VERSION} SOVERSION ${FRAMEWORK_VERSION})
+    set_target_properties(webpdecoder PROPERTIES VERSION ${VERSION} SOVERSION ${FRAMEWORK_VERSION})
+    set_target_properties(webpdemux PROPERTIES VERSION ${VERSION} SOVERSION ${WEBP_DEMUX_SOVERSION})
+else()
+    parse_version(Makefile.am webp WEBP_WEBP_SOVERSION)
+    set_target_properties(webp
+                          PROPERTIES VERSION
+                                     ${VERSION}
+                                     SOVERSION
+                                     ${WEBP_WEBP_SOVERSION})
+    parse_version(Makefile.am webpdecoder WEBP_DECODER_SOVERSION)
+    set_target_properties(webpdecoder
+                          PROPERTIES VERSION
+                                     ${VERSION}
+                                     SOVERSION
+                                     ${WEBP_DECODER_SOVERSION})
+    parse_version(demux/Makefile.am webpdemux WEBP_DEMUX_SOVERSION)
+    set_target_properties(webpdemux
+                          PROPERTIES VERSION
+                                     ${VERSION}
+                                     SOVERSION
+                                     ${WEBP_DEMUX_SOVERSION})
+endif()
 # file(READ ${CMAKE_CURRENT_SOURCE_DIR}/configure.ac CONFIGURE_FILE)
 # string(REGEX MATCH
 #              "AC_INIT\\([^\n]*\\[[0-9\\.]+\\]"
@@ -629,13 +635,16 @@ if(WEBP_BUILD_GIF2WEBP OR WEBP_BUILD_IMG2WEBP)
   target_include_directories(libwebpmux
                              PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                      ${CMAKE_CURRENT_SOURCE_DIR})
-  parse_version(mux/Makefile.am webpmux WEBP_MUX_SOVERSION)
-  set_target_properties(libwebpmux
+  if(OSX_FRAMEWORK)
+    set_target_properties(libwebpmux PROPERTIES VERSION ${VERSION} SOVERSION ${FRAMEWORK_VERSION})
+  else()
+    parse_version(mux/Makefile.am webpmux WEBP_MUX_SOVERSION)
+    set_target_properties(libwebpmux
                         PROPERTIES VERSION
                                    ${PACKAGE_VERSION}
                                    SOVERSION
                                    ${WEBP_MUX_SOVERSION})
-
+  endif()
   set_target_properties(libwebpmux PROPERTIES OUTPUT_NAME webpmux)
   list(APPEND INSTALLED_LIBRARIES libwebpmux)
   # configure_pkg_config("src/mux/libwebpmux.pc")
