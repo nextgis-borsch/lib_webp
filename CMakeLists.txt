@@ -392,6 +392,7 @@ add_library(webp ${LIB_TYPE}
             $<TARGET_OBJECTS:webputils> ${PUBLIC_HEADERS_WP})
 target_link_libraries(webp ${WEBP_DEP_LIBRARIES})
 target_include_directories(webp
+                           PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
                                    ${CMAKE_CURRENT_BINARY_DIR})
 if(OSX_FRAMEWORK)
