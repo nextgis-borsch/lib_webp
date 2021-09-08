@@ -284,11 +284,11 @@ target_include_directories(webputilsdecode
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                    ${CMAKE_CURRENT_SOURCE_DIR})
 
-#set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_BINARY_DIR}/src/webp/decode.h ${CMAKE_CURRENT_BINARY_DIR}/src/webp/types.h)
-#if(WIN32)
-#    set(PUBLIC_HEADERS_WDC ${PUBLIC_HEADERS_WDC} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebpdecoder.rc)
-#endif()
-add_library(webpdecoder ${LIB_TYPE}
+set(PUBLIC_HEADERS_WDC ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
+if(WIN32)
+   set(PUBLIC_HEADERS_WDC ${PUBLIC_HEADERS_WDC} ${CMAKE_CURRENT_SOURCE_DIR}/src/libwebpdecoder.rc)
+endif()
+add_library(webpdecoder ${LIB_TYPE} ${PUBLIC_HEADERS_WDC}
     $<TARGET_OBJECTS:webpdecode>
     $<TARGET_OBJECTS:webpdspdecode>
     $<TARGET_OBJECTS:webputilsdecode>
@@ -306,7 +306,8 @@ target_include_directories(
   webpdecoder
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
   INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+            # $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+            )
 
 if(OSX_FRAMEWORK)
     set_property(SOURCE ${PUBLIC_HEADERS_WDC}
@@ -324,8 +325,7 @@ if(OSX_FRAMEWORK)
 else()
     set_target_properties(
       webpdecoder
-      PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h")
+      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WDC}")
 endif()
 
 # configure_pkg_config("src/libwebpdecoder.pc")
@@ -358,7 +358,12 @@ target_include_directories(webputils
                                    ${CMAKE_CURRENT_SOURCE_DIR})
 add_webp_extern_definitions(webputils)
 
-add_library(webp ${LIB_TYPE}
+set(PUBLIC_HEADERS_WP 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/encode.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h)
+
+add_library(webp ${LIB_TYPE} ${PUBLIC_HEADERS_WP}
             $<TARGET_OBJECTS:webpdecode>
             $<TARGET_OBJECTS:webpdsp>
             $<TARGET_OBJECTS:webpencode>
@@ -372,9 +377,12 @@ endif()
 target_link_libraries(webp ${WEBP_DEP_LIBRARIES})
 target_include_directories(webp
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-                                  $<INSTALL_INTERFACE:include>
+                                #   $<INSTALL_INTERFACE:include>
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
                                    ${CMAKE_CURRENT_BINARY_DIR})
+
+
+
 if(OSX_FRAMEWORK)
     set_property(SOURCE ${PUBLIC_HEADERS_WP}
         PROPERTY MACOSX_PACKAGE_LOCATION "Headers/webp"
@@ -391,9 +399,7 @@ if(OSX_FRAMEWORK)
 else()
     set_target_properties(
       webp
-      PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/encode.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h")
+      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WP}")
 endif()
 
 # Make sure the OBJECT libraries are built with position independent code (it is
@@ -407,7 +413,14 @@ set_target_properties(webpdecode
                       PROPERTIES POSITION_INDEPENDENT_CODE ON)
 # configure_pkg_config("src/libwebp.pc")
 
-add_library(webpdemux ${LIB_TYPE} ${WEBP_DEMUX_SRCS})
+set(PUBLIC_HEADERS_WDU
+${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h
+${CMAKE_CURRENT_SOURCE_DIR}/src/webp/demux.h
+${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
+${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h
+)
+
+add_library(webpdemux ${LIB_TYPE} ${WEBP_DEMUX_SRCS} ${PUBLIC_HEADERS_WDU})
 target_link_libraries(webpdemux webp)
 target_include_directories(webpdemux
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -431,10 +444,7 @@ if(OSX_FRAMEWORK)
 else()
     set_target_properties(
       webpdemux
-      PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/webp/decode.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/demux.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h")
+      PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS_WDU}")
 endif()
 
 # configure_pkg_config("src/demux/libwebpdemux.pc")
@@ -579,8 +589,15 @@ if(WEBP_BUILD_CWEBP)
 endif()
 
 if(WEBP_BUILD_LIBWEBPMUX)
+
+  set(PUBLIC_HEADERS_WM
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h
+  )
+
   parse_makefile_am(${CMAKE_CURRENT_SOURCE_DIR}/src/mux "WEBP_MUX_SRCS" "")
-  add_library(libwebpmux ${WEBP_MUX_SRCS})
+  add_library(libwebpmux ${WEBP_MUX_SRCS} ${PUBLIC_HEADERS_WM})
   target_link_libraries(libwebpmux webp)
   target_include_directories(libwebpmux
                              PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
@@ -607,10 +624,8 @@ if(WEBP_BUILD_LIBWEBPMUX)
     )
   else()
       set_target_properties(libwebpmux PROPERTIES PUBLIC_HEADER
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/mux_types.h;\
-${CMAKE_CURRENT_SOURCE_DIR}/src/webp/types.h;"
-    DEFINE_SYMBOL WEBP_EXPORTS)
+        "${PUBLIC_HEADERS_WM}"
+        DEFINE_SYMBOL WEBP_EXPORTS)
   endif()
 endif()
 
